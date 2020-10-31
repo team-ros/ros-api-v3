@@ -18,6 +18,5 @@ import v3 from "./routes/v3"
 // apply routes
 app.use("/v3", v3)
 
-
 // set http port
 app.listen(process.env.PORT || 8080)
