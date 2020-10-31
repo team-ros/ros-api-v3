@@ -34,13 +34,13 @@ router.post("/", validationRules, async (req: IAuthenticatedRequest, res: Respon
     if(parent !== null) {
         if(!await CheckIfParentExists(parent, user)) return res.json({
             status: false,
-            message: "Parent object does not exist",
+            message: "parent object does not exist",
         })
     }
 
     if(!await CheckForDoubleNames(name, parent, user)) return res.json({
         status: false,
-        message: "An object with the same name already exists in this directory"
+        message: "an object with the same name already exists in this directory"
     })
 
     if(!await CreateDirectory(name, parent, user)) return res.json({
@@ -50,7 +50,7 @@ router.post("/", validationRules, async (req: IAuthenticatedRequest, res: Respon
     
     return res.json({
         status: true,
-        message: "Directory successfully created"
+        message: "directory successfully created"
     })
 
 })
