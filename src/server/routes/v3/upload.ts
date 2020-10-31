@@ -18,7 +18,7 @@ interface IAuthenticatedRequest extends Request {
 import { CheckForDoubleNames } from "../../handlers/v3/create-dir"
 import { UploadFile } from "../../handlers/v3/upload"
 
-router.get("/", validationRules, upload.single("file"), async (req: IAuthenticatedRequest, res: Response) => {
+router.put("/", validationRules, upload.single("file"), async (req: IAuthenticatedRequest, res: Response) => {
 
     // return any errors from validation
     const errors = validationResult(req)
