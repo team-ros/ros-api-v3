@@ -14,7 +14,7 @@ interface IAuthenticatedRequest extends Request {
 
 import { CheckIfParentExists, CheckForDoubleNames, CreateDirectory } from "../../handlers/v3/create-dir"
 
-router.get("/", validationRules, async (req: IAuthenticatedRequest, res: Response) => {
+router.post("/", validationRules, async (req: IAuthenticatedRequest, res: Response) => {
 
     // return any errors from validation
     const errors = validationResult(req)
@@ -45,7 +45,7 @@ router.get("/", validationRules, async (req: IAuthenticatedRequest, res: Respons
 
     if(!await CreateDirectory(name, parent, user)) return res.json({
         status: false,
-        message: "could not create directory"
+        message: "database error"
     })
     
     return res.json({
