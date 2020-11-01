@@ -28,9 +28,10 @@ export const CheckForDoubleNames = async (name: string, parent: string | null, o
     }
 }
 
-export const CreateDirectory = async (name: string, parent: string | null, owner: string) => {
+export const CreateDirectory = async (name: string, parent: string | null, owner: string, uuid: string) => {
     try {
         const response = await objectModel.create({
+            uuid,
             name,
             parent,
             owner,
