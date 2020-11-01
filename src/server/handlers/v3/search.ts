@@ -1,26 +1,36 @@
-import { response } from "express"
+import { Query } from "mongoose"
 import { SearchClient } from "../../../elasticsearch/connection"
 
 export const SearchObject = async (query: string, owner: String) => {
     try {
         const response = await SearchClient.search({
-            index: "ros",
+            index: String(process.env.ELASTIC_INDEX),
             body: {
                 query: {
                     bool: {
-                        should: [
-                            { 
-                                term: {
-                                    name: query
+                        must: [
+                            {
+                                bool: {
+                                    should: [
+                                        {
+                                            match: {
+                                                name: {
+                                                    query,
+                                                    fuzziness: "AUTO"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            match: {
+                                                contents: {
+                                                    query,
+                                                    fuzziness: "AUTO"
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             },
-                            {
-                                term: {
-                                    content: query
-                                }
-                            }
-                        ],
-                        must: [
                             {
                                 match: {
                                     owner
