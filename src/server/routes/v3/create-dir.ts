@@ -2,6 +2,7 @@ import express, { Request, Response } from "express"
 const router = express.Router()
 
 import { body, validationResult } from "express-validator"
+import { v4 as uuidv4 } from "uuid"
 
 const validationRules = [
     body("name").isString().notEmpty(),
@@ -13,6 +14,7 @@ interface IAuthenticatedRequest extends Request {
 }
 
 import { CheckIfParentExists, CheckForDoubleNames, CreateDirectory } from "../../handlers/v3/create-dir"
+import { IndexObject } from "../../handlers/v3/upload"
 
 router.post("/", validationRules, async (req: IAuthenticatedRequest, res: Response) => {
 
@@ -30,6 +32,7 @@ router.post("/", validationRules, async (req: IAuthenticatedRequest, res: Respon
     const name: string = req.body.name
     const parent: string | null = req.body.parent || null
     const user: string = req.user.sub
+    const uuid: string = uuidv4()
 
     if(parent !== null) {
         if(!await CheckIfParentExists(parent, user)) return res.json({
@@ -43,14 +46,19 @@ router.post("/", validationRules, async (req: IAuthenticatedRequest, res: Respon
         message: "an object with the same name already exists in this directory"
     })
 
-    if(!await CreateDirectory(name, parent, user)) return res.json({
+    if(!await CreateDirectory(name, parent, user, uuid)) return res.json({
         status: false,
         message: "database error"
+    })
+
+    if(!await IndexObject(false, name, user, uuid)) return res.json({
+        status: true,
+        message: "directory created successfully but could not be indexed"
     })
     
     return res.json({
         status: true,
-        message: "directory successfully created"
+        message: "directory created and indexed successfully"
     })
 
 })
