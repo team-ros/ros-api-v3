@@ -2,6 +2,7 @@ import express, { Request, Response } from "express"
 const router = express.Router()
 
 import { query, validationResult } from "express-validator"
+import { v4 as uuidv4 } from "uuid"
 
 import multer from "multer"
 const upload = multer({ dest: "/tmp" })
@@ -16,7 +17,8 @@ interface IAuthenticatedRequest extends Request {
 }
 
 import { CheckForDoubleNames } from "../../handlers/v3/create-dir"
-import { UploadFile } from "../../handlers/v3/upload"
+import { UploadFile, IndexObject } from "../../handlers/v3/upload"
+import { GetContent } from "../../../classifier/indexer"
 
 router.put("/", validationRules, upload.single("file"), async (req: IAuthenticatedRequest, res: Response) => {
 
@@ -35,6 +37,7 @@ router.put("/", validationRules, upload.single("file"), async (req: IAuthenticat
     const parent: any = req.query.parent || null
     const owner: string = req.user.sub
     const name: any = req.query.name || null
+    const fileID: string = uuidv4()
 
     if(!file) return res.json({
         status: false,
@@ -46,16 +49,22 @@ router.put("/", validationRules, upload.single("file"), async (req: IAuthenticat
         message: "An object with the same name already exists in this directory"
     })
 
-    if(!await UploadFile(file, owner, name, parent)) return res.json({
+    if(!await UploadFile(file, owner, name, parent, fileID)) return res.json({
         status: false,
         message: "could not upload file"
     })
 
-    return res.json({
+    const fileContents = await GetContent(file)
+    
+    if(!await IndexObject(true, name || file.originalname, owner, fileID, typeof fileContents === "boolean" ? undefined : fileContents)) return res.json({
         status: true,
-        message: "file uploaded successfully"
+        message: "file uploaded successfully but could not be indexed"
     })
 
+    return res.json({
+        status: true,
+        message: "file uploaded and indexed successfully"
+    })
 
 })
 
