@@ -6,5 +6,6 @@ if(!process.env.S3_PORT) throw "no s3 port defined in environment"
 if(!process.env.S3_ACCESS_KEY) throw "no s3 access key defined in environment"
 if(!process.env.S3_SECRET_KEY) throw "no s3 secret key defined in environment"
 if(!process.env.FIREBASE) throw "no firebase key defined in environment"
+if(!process.env.ELASTIC_URL) throw "no elasticsearch connection string was provided"
 
 import "./server"
