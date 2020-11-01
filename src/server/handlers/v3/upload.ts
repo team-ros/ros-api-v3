@@ -34,9 +34,9 @@ export const UploadFile = async (file: Express.Multer.File, owner: string, name:
 export const IndexObject = async (type: boolean, name: string, owner: string, id: string, contents?: string) => {
     try {
         await SearchClient.index({
-            index: "ros",
+            index: String(process.env.ELASTIC_INDEX),
             body: {
-                type, // true = file; false = directory
+                type,
                 name,
                 owner,
                 id,
