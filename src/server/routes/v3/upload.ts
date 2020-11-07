@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 const router = express.Router()
 
+import { RESPONSE } from "../../Responses/v3/ERROR_RESPONSES"
 import { query, validationResult } from "express-validator"
 import { v4 as uuidv4 } from "uuid"
 
@@ -39,32 +40,17 @@ router.put("/", validationRules, upload.single("file"), async (req: IAuthenticat
     const name: any = req.query.name || null
     const fileID: string = uuidv4()
 
-    if(!file) return res.json({
-        status: false,
-        message: "no file uploaded"
-    })
+    if(!file) return res.json(RESPONSE("NO_FILE_UPLOADED"))
 
-    if(!await CheckForDoubleNames(name || file.originalname, parent, owner)) return res.json({
-        status: false,
-        message: "An object with the same name already exists in this directory"
-    })
+    if(!await CheckForDoubleNames(name || file.originalname, parent, owner)) return res.json(RESPONSE("OBJECT_ALREADY_EXISTS"))
 
-    if(!await UploadFile(file, owner, name, parent, fileID)) return res.json({
-        status: false,
-        message: "could not upload file"
-    })
+    if(!await UploadFile(file, owner, name, parent, fileID)) return res.json(RESPONSE("UPLOAD_ERROR"))
 
     const fileContents = await GetContent(file)
     
-    if(!await IndexObject(true, name || file.originalname, owner, fileID, typeof fileContents === "boolean" ? undefined : fileContents)) return res.json({
-        status: true,
-        message: "file uploaded successfully but could not be indexed"
-    })
+    if(!await IndexObject(true, name || file.originalname, owner, fileID, typeof fileContents === "boolean" ? undefined : fileContents)) return res.json(RESPONSE("FILE_UPLOADED_SUCCESSFULLY_INDEX_ERROR", { status: true }))
 
-    return res.json({
-        status: true,
-        message: "file uploaded and indexed successfully"
-    })
+    return res.json(RESPONSE("FILE_UPLOADED_SUCCESSFULLY", { status: true }))
 
 })
 

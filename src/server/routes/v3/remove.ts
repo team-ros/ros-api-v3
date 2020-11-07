@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 const router = express.Router()
 
+import { RESPONSE } from "../../Responses/v3/ERROR_RESPONSES"
 import { body, check, validationResult } from "express-validator"
 
 const validationRules = [
@@ -31,22 +32,13 @@ router.delete("/", validationRules, async (req: IAuthenticatedRequest, res: Resp
     const user: string = req.user.sub
     const uuid: string = req.body.object_id
 
-    if(!await CheckIfObjectExists(uuid, user)) return res.json({
-        status: false,
-        message: "the requested object does not exist"
-    })
+    if(!await CheckIfObjectExists(uuid, user)) return res.json(RESPONSE("OBJECT_DOES_NOT_EXIST"))
 
     if(await CheckType(uuid, user) === "file") {
-        if(!await RemoveObjectFromS3(uuid)) return res.json({
-            status: false,
-            message: "could not remove object from s3"
-        })
+        if(!await RemoveObjectFromS3(uuid)) return res.json(RESPONSE("OBJECT_NOT_REMOVABLE_S3"))
     }
 
-    if(!await RemoveObjectFromDatabase(uuid, user)) return res.json({
-        status: false,
-        message: "could not remove object from database"
-    })
+    if(!await RemoveObjectFromDatabase(uuid, user)) return res.json(RESPONSE("OBJECT_NOT_REMOVABLE_DB"))
 
     return res.json({
         status: true
