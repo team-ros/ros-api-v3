@@ -86,6 +86,18 @@ const RESPONSES = {
     UPLOAD_ERROR: {
         message: "could not upload file",
         code: 22
+    },
+    OBJECT_CHILDREN_CANNOT_BE_LOADED: {
+        message: "the children of a directory could not be loaded",
+        code: 23
+    },
+    COPY_ERROR: {
+        message: "an error occured while copying this could be due to multiple CRUD operations simultaniously",
+        code: 24
+    },
+    DELETE_ERROR: {
+        message: "error while deleting object",
+        code: 25
     }
 }
 

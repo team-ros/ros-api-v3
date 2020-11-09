@@ -2,7 +2,7 @@ import express, { Request, Response } from "express"
 const router = express.Router()
 
 import { RESPONSE } from "../../Responses/v3/ERROR_RESPONSES"
-import { body, check, validationResult } from "express-validator"
+import { body, validationResult } from "express-validator"
 
 const validationRules = [
     body("object_id").isUUID().notEmpty()
@@ -13,8 +13,7 @@ interface IAuthenticatedRequest extends Request {
 }
 
 import { CheckIfParentExists as CheckIfObjectExists } from "../../handlers/v3/create-dir"
-import { CheckType } from "../../handlers/v3/get"
-import { RemoveObjectFromDatabase, RemoveObjectFromS3 } from "../../handlers/v3/remove"
+import { deleteObj as DeleteObject } from "../../handlers/v3/remove"
 
 router.delete("/", validationRules, async (req: IAuthenticatedRequest, res: Response) => {
 
@@ -34,11 +33,7 @@ router.delete("/", validationRules, async (req: IAuthenticatedRequest, res: Resp
 
     if(!await CheckIfObjectExists(uuid, user)) return res.json(RESPONSE("OBJECT_DOES_NOT_EXIST"))
 
-    if(await CheckType(uuid, user) === "file") {
-        if(!await RemoveObjectFromS3(uuid)) return res.json(RESPONSE("OBJECT_NOT_REMOVABLE_S3"))
-    }
-
-    if(!await RemoveObjectFromDatabase(uuid, user)) return res.json(RESPONSE("OBJECT_NOT_REMOVABLE_DB"))
+    if(!await DeleteObject(uuid, user)) return res.json(RESPONSE("DELETE_ERROR"))
 
     return res.json({
         status: true
