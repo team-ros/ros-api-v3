@@ -8,13 +8,9 @@ RUN apt install -y nodejs
 
 WORKDIR /usr/app
 
-RUN apt install sudo
-
-COPY package*.json .
+COPY . .
 
 RUN npm run install
-
-COPY . .
 
 RUN npm run build
 
