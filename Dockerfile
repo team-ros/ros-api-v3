@@ -8,11 +8,11 @@ RUN apt install -y nodejs
 
 WORKDIR /usr/app
 
-COPY package*.json .
-
-RUN npm run install
+#COPY package*.json /usr/app
 
 COPY . .
+
+RUN npm run install
 
 RUN npm run build
 
