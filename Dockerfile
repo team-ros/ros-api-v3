@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt update
-RUN apt install -y curl
+RUN apt install -y curl sudo
 RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
 RUN apt update
 RUN apt install -y nodejs
