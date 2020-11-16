@@ -1,6 +1,8 @@
 FROM debian:latest
 
+RUN apt install -y curl
 RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
+RUN apt update
 RUN apt install -y nodejs
 
 WORKDIR /usr/app
