@@ -42,7 +42,7 @@ export const CheckType = async (uuid: string | null, owner: string) => {
 
 export const GetFile = async (uuid: string) => {
     try {
-        const response = await minioClient.presignedGetObject((process.env.HEROKU_DEV ? String(process.env.S3_BUCKET) : "ros"), uuid, 24*60*60)
+        const response = await minioClient.presignedGetObject(String(process.env.S3_BUCKET), uuid, 24*60*60)
         return response
     }
     catch(err) {

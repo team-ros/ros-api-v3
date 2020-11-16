@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import { RESPONSE } from "../Responses/v3/ERROR_RESPONSES"
 import { Request, Response, NextFunction } from "express"
 
 admin.initializeApp({
@@ -10,15 +11,9 @@ interface IRequest extends Request {
 }
 
 export const firebaseMiddleware = async (req: IRequest, res: Response, next: NextFunction) => {
-    if(!req.headers.authorization) return res.status(403).json({
-        status: false,
-        message: "unauthorized"
-    })
+    if(!req.headers.authorization) return res.status(403).json(RESPONSE("USER_NOT_AUTHENTICATED"))
 
-    if(!/Bearer .*/.test(req.headers.authorization)) return res.status(403).json({
-        status: false,
-        message: "malformed access token"
-    })
+    if(!/Bearer .*/.test(req.headers.authorization)) return res.status(403).json(RESPONSE("TOKEN_MALFORMED"))
 
     const token: string = req.headers.authorization.replace("Bearer ", "")
 
@@ -30,10 +25,7 @@ export const firebaseMiddleware = async (req: IRequest, res: Response, next: Nex
         next()
     }
     catch(err) {
-        res.status(403).json({
-            status: false,
-            message: "access token not valid",
-        })
+        res.status(403).json(RESPONSE("TOKEN_NOT_VALID"))
     }
 }
 

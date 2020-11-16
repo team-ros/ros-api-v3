@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 const router = express.Router()
 
+import { RESPONSE } from "../../Responses/v3/ERROR_RESPONSES"
 import { query, validationResult } from "express-validator"
 
 const validationRules = [
@@ -11,7 +12,7 @@ interface IAuthenticatedRequest extends Request {
     user?: any
 }
 
-import { SearchObject } from "../../handlers/v3/search"
+import { SearchObject, SerializeResponse } from "../../handlers/v3/search"
 
 router.get("/", validationRules, async (req: IAuthenticatedRequest, res: Response) => {
 
@@ -31,14 +32,11 @@ router.get("/", validationRules, async (req: IAuthenticatedRequest, res: Respons
 
     const response = await SearchObject(query, user)
     
-    if(response === false) return res.json({
-        status: false,
-        message: "could not search"
-    })
+    if(response === false) return res.json(RESPONSE("SEARCH_ERROR"))
 
     return res.json({
         status: true,
-        search: response
+        search: SerializeResponse(response)
     })
 })
 

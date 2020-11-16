@@ -1,4 +1,7 @@
-FROM node:lts-buster
+FROM debian:latest
+
+RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
+RUN apt install -y nodejs
 
 WORKDIR /usr/app
 

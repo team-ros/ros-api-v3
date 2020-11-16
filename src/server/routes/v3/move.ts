@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 const router = express.Router()
 
+import { RESPONSE } from "../../Responses/v3/ERROR_RESPONSES"
 import { body, validationResult } from "express-validator"
 
 const validationRules = [
@@ -34,41 +35,23 @@ router.patch("/", validationRules, async (req: IAuthenticatedRequest, res: Respo
     const uuid: string = req.body.object_id
     const user: string = req.user.sub
 
-    if(!await CheckIfObjectExists(uuid, user)) return res.json({
-        status: false,
-        message: "the requested object does not exist"
-    })
+    if(!await CheckIfObjectExists(uuid, user)) return res.json(RESPONSE("OBJECT_DOES_NOT_EXIST"))
 
     if(parent !== null) {
-        if(!await CheckIfParentExists(parent, user)) return res.json({
-            status: false,
-            message: "parent object does not exist"
-        })
+        if(!await CheckIfParentExists(parent, user)) return res.json(RESPONSE("PARENT_DOES_NOT_EXIST"))
     }
 
     if(name === null) {
         const currentObjectName = await GetCurrentObjectName(uuid, user)
-        if(!currentObjectName) return res.json({
-            status: false,
-            message: "could not get name of object"
-        })
+        if(!currentObjectName) return res.json(RESPONSE("OBJECT_NAME_NOT_FETCHABLE"))
 
-        if(!await CheckForDoubleNames(currentObjectName, parent, user)) return res.json({
-            status: false,
-            message: "an object with the same name already exists in this directory"
-        })
+        if(!await CheckForDoubleNames(currentObjectName, parent, user)) return res.json(RESPONSE("OBJECT_ALREADY_EXISTS"))
     }
     else {
-        if(!await CheckForDoubleNames(name, parent, user)) return res.json({
-            status: false,
-            message: "an object with the same name already exists in this directory"
-        })
+        if(!await CheckForDoubleNames(name, parent, user)) return res.json(RESPONSE("OBJECT_ALREADY_EXISTS"))
     }
 
-    if(!await MoveObject(uuid, parent, name, user)) return res.json({
-        status: false,
-        message: "could not move object"
-    })
+    if(!await MoveObject(uuid, parent, name, user)) return res.json(RESPONSE("OBJECT_NOT_MOVABLE"))
 
     return res.json({
         status: true

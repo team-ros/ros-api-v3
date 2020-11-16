@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid"
 export const UploadFile = async (file: Express.Multer.File, owner: string, name: string | null, parent: string | null, fileID: string) => {
     try {
 
-        const minioResponse = await minioClient.fPutObject((process.env.HEROKU_DEV ? String(process.env.S3_BUCKET) : "ros"), fileID, file.path, {
+        const minioResponse = await minioClient.fPutObject(String(process.env.S3_BUCKET), fileID, file.path, {
             "Content-Type": file.mimetype
         })
         
