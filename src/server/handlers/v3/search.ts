@@ -1,5 +1,5 @@
-import { Query } from "mongoose"
 import { SearchClient } from "../../../elasticsearch/connection"
+import { objectModel } from "../../../database/model"
 
 interface IRawSearch {
     _id: string
@@ -62,13 +62,36 @@ export const SearchObject = async (query: string, owner: String): Promise<IRawSe
     }
 }
 
-export const SerializeResponse = (search: IRawSearch[]) => {
-    return search.map(value => {
+export const SerializeResponse = async (search: IRawSearch[]) => {    
+    const response = await Promise.all(search.map(async value => {
         return {
             score: value._score,
             id: value._source.id,
             name: value._source.name,
-            type: value._source.type ? "file" : "directory"
+            type: value._source.type ? "file" : "directory",
+            ...(await SearchInDatabase(value._source.id))
         }
-    })
+    }))
+    console.log(response)
+    return response
+}
+
+const SearchInDatabase = async (id: string) => {
+    try {
+        const response = await objectModel.findOne({ uuid: id })
+        if (response) return {
+            parent: response.parent,
+            size: response.type ? response.file_size : 0,
+            date: response.created_at
+        }
+        return {
+            error_message: "listing error"
+        }
+    }
+    catch(err) {
+        return {
+            error_message: "listing error",
+            error: err
+        }
+    }
 }

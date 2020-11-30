@@ -36,7 +36,7 @@ router.get("/", validationRules, async (req: IAuthenticatedRequest, res: Respons
 
     return res.json({
         status: true,
-        search: SerializeResponse(response)
+        search: await SerializeResponse(response)
     })
 })
 
