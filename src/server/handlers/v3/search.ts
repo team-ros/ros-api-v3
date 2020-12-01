@@ -1,5 +1,6 @@
 import { SearchClient } from "../../../elasticsearch/connection"
 import { objectModel } from "../../../database/model"
+import mime from "mime"
 
 interface IRawSearch {
     _id: string
@@ -81,7 +82,9 @@ const SearchInDatabase = async (id: string) => {
         if (response) return {
             parent: response.parent,
             size: response.type ? response.file_size : 0,
-            date: response.created_at
+            date: response.created_at,
+            fileType: response.type ? mime.getType(response.name) : undefined,
+            fileExtention: response.type ? mime.getExtension(mime.getType(response.name) || "") : undefined,
         }
         return {
             error_message: "listing error"

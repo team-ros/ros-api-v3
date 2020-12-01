@@ -1,5 +1,6 @@
 import { objectModel } from "../../../database/model"
 import minioClient from "../../../s3/connection"
+import mime from "mime"
 
 export const FileListing = async (parent: string | null, owner: string) => {
     try {
@@ -12,6 +13,8 @@ export const FileListing = async (parent: string | null, owner: string) => {
                 id: value.uuid,
                 name: value.name,
                 parent: value.parent,
+                fileType: value.type ? mime.getType(value.name) : undefined,
+                fileExtention: value.type ? mime.getExtension(mime.getType(value.name) || "") : undefined,
                 type: value.type ? "file" : "directory",
                 size: value.type ? value.file_size : 0,
                 date: value.created_at
