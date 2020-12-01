@@ -72,7 +72,6 @@ export const SerializeResponse = async (search: IRawSearch[]) => {
             ...(await SearchInDatabase(value._source.id))
         }
     }))
-    console.log(response)
     return response
 }
 
