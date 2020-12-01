@@ -1,7 +1,7 @@
 import { PlaintextHandler } from "./plaintext-handler"
 import { PdfHandler } from "./pdf-handler"
 import { DocxHandler } from "./docx-handler"
-// import { ImageHandler } from "./image-handler"
+import { ImageHandler } from "./image-handler"
 
 const maxIndexingSize: number = 1e+7 // 10 Megabyte
 
@@ -15,11 +15,11 @@ export const GetContent = async (file: Express.Multer.File) => {
             return response
         }
         
-        // if(file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/gif") {
-        //     const response = await ImageHandler(file.path)
-        //     if(!response) return false
-        //     return response
-        // }
+        if(file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/gif") {
+            const response = await ImageHandler(file.path)
+            if(!response) return false
+            return response
+        }
 
         if(file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
             const response = await DocxHandler(file.path)
