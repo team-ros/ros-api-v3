@@ -1,5 +1,6 @@
 import { objectModel } from "../../../database/model"
 import minioClient from "../../../s3/connection"
+import { SearchClient } from "../../../elasticsearch/connection"
 
 export const RemoveObjectFromDatabase = async (uuid: string, owner: string) => {
     try {
@@ -16,6 +17,26 @@ export const RemoveObjectFromDatabase = async (uuid: string, owner: string) => {
 export const RemoveObjectFromS3 = async (uuid: string) => {
     try {
         await minioClient.removeObject(String(process.env.S3_BUCKET), uuid)
+        return true
+    }
+    catch(err) {
+        if(Boolean(process.env.DEV)) console.error(err)
+        return false
+    }
+}
+
+export const RemoveObjectFromElasticsearch = async (uuid: string) => {
+    try {
+        const response = await SearchClient.deleteByQuery({
+            index: String(process.env.ELASTIC_INDEX),
+            type: "_doc",
+            body: {
+                query: {
+                    match: { id: uuid }
+                }
+            }
+        })
+
         return true
     }
     catch(err) {
@@ -70,6 +91,7 @@ const deleteSingleObject = async (uuid: string): Promise<void> => {
     try {
         const databaseDelete = await objectModel.deleteOne({ uuid })
         const s3Delete = await minioClient.removeObject(String(process.env.S3_BUCKET), uuid)
+        const elasticDelete = await RemoveObjectFromElasticsearch(uuid)
     }
     catch(err) {
         console.log(err)
