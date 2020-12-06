@@ -14,7 +14,7 @@ export const UploadFile = async (file: Express.Multer.File, owner: string, name:
 
         const databaseResponse = await objectModel.create({
             uuid: fileID,
-            name: name || file.originalname,
+            name: RemoveFileNameExtention(name || file.originalname),
             parent,
             owner,
             type: true,
@@ -49,4 +49,8 @@ export const IndexObject = async (type: boolean, name: string, owner: string, id
         if(Boolean(process.env.DEV)) console.error(err)
         return false
     }
+}
+
+const RemoveFileNameExtention = (name: string) => {
+    return name.substr(0, name.lastIndexOf('.')) || name;
 }
