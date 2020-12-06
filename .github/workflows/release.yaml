@@ -24,4 +24,4 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: rollout restart ros-api -n ros-api-namespace
+          args: rollout restart deployment ros-api -n ros-api-namespace
