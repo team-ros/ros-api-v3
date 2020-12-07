@@ -7,6 +7,7 @@ export interface Iobject extends Document {
     uuid?: string
     name: string
     parent: string | null
+    mimeType?: string
     type: boolean
     owner: string
     file_size?: number
@@ -34,6 +35,11 @@ const objectSchema = new Schema({
     parent: {
         type: String,
         index: true
+    },
+
+    mimeType: {
+        type: String,
+        required: true
     },
 
     // file type

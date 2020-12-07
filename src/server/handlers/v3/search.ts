@@ -79,12 +79,13 @@ export const SerializeResponse = async (search: IRawSearch[]) => {
 const SearchInDatabase = async (id: string) => {
     try {
         const response = await objectModel.findOne({ uuid: id })
+
         if (response) return {
             parent: response.parent,
             size: response.type ? response.file_size : 0,
             date: response.created_at,
-            fileType: response.type ? mime.getType(response.name) : undefined,
-            fileExtention: response.type ? mime.getExtension(mime.getType(response.name) || "") : undefined,
+            fileType: response.type ? response.mimeType : undefined,
+            fileExtention: response.type ? mime.getExtension(response.mimeType || "") : undefined,
         }
         return {
             error_message: "listing error"

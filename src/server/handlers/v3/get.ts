@@ -13,8 +13,8 @@ export const FileListing = async (parent: string | null, owner: string) => {
                 id: value.uuid,
                 name: value.name,
                 parent: value.parent,
-                fileType: value.type ? mime.getType(value.name) : undefined,
-                fileExtention: value.type ? mime.getExtension(mime.getType(value.name) || "") : undefined,
+                fileType: value.type ? value.mimeType : undefined,
+                fileExtention: value.type ? mime.getExtension(value.mimeType || "") : undefined,
                 type: value.type ? "file" : "directory",
                 size: value.type ? value.file_size : 0,
                 date: value.created_at
