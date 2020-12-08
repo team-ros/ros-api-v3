@@ -1,6 +1,12 @@
 import express from "express"
 const router = express.Router()
 
+// import middleware
+import { firebaseMiddleware } from "../../middleware/firebaseMiddleware"
+
+// apply middleware
+router.use(firebaseMiddleware)
+
 // import routes
 import createDirectory from "./create-dir"
 import upload from "../v3/upload"
