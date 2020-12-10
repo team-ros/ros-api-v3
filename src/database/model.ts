@@ -39,7 +39,7 @@ const objectSchema = new Schema({
 
     mimeType: {
         type: String,
-        required: true
+        required: false
     },
 
     // file type
