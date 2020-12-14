@@ -10,24 +10,22 @@ interface IOptionsGetFromQuery {
 
 export const SearchOnDatabase = async (options: IOptionsGetFromQuery) => {
     try {
-        const response = await objectModel.find(JSON.parse(JSON.stringify({
+
+        const DatabaseQuery = JSON.stringify({
             owner: options.userid,
             uuid: options.object_id
-        })))
+        })
+
+        const response = await objectModel.find(JSON.parse(DatabaseQuery))
         .limit(options.limit || 9999999)
         .skip(options.offset || 0)
 
-        console.log("DATABASE_RESPONSE:", response)
         if(response) return response
         return false
     }
     catch(err) {
         return false
     }
-}
-
-export const Serialize = async () => {
-    
 }
 
 export const SearchOnElasticsearch = async (options: IOptionsGetFromQuery) => {
@@ -40,28 +38,14 @@ export const SearchOnElasticsearch = async (options: IOptionsGetFromQuery) => {
             body: {
                 query: {
                     bool: {
-                        must: [
-                            {
-                                match: { 
-                                    uuid: options.object_id
-                                }
-                            },
-                            {
-                                match: {
-                                    owner: options.userid
-                                }
-                            }
-                        ]
+                        must: ElasticQueryBuilder({ uuid: options.object_id, owner: options.userid })
                     }
                 }
             }
         })
 
-        console.log("ELASTIC_QUERY:", elasticQuery)
 
         const response = await SearchClient.search(JSON.parse(elasticQuery))
-
-        console.log("SEARCH RESULTS:", response.body.hits.hits)
 
         return response.body.hits.hits
     }
@@ -69,4 +53,12 @@ export const SearchOnElasticsearch = async (options: IOptionsGetFromQuery) => {
         console.log("SEARCH ERROR:", err)
         return false
     }
+}
+
+const ElasticQueryBuilder = (options: { uuid?: string, owner?: string }) => {
+    let rtarr = []
+    if(options.uuid) rtarr.push({ match: { uuid: options.uuid }})
+    if(options.owner) rtarr.push({ match: { owner: options.owner }})
+
+    return rtarr
 }

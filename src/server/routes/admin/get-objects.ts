@@ -9,7 +9,7 @@ const validationRules = [
     query("offset").isNumeric().optional({ nullable: true }),
     query("userid").isString().optional({ nullable: true }),
     query("search").isString().optional({ nullable: true }),
-    query("object_id").isUUID().optional({ nullable: true })
+    query("object_id").isUUID().optional({ nullable: false })
 ]
 
 router.get("/", validationRules, async (req: Request, res: Response) => {
@@ -26,18 +26,26 @@ router.get("/", validationRules, async (req: Request, res: Response) => {
     }
 
     try {
-        const limit: number | undefined = Number(req.query.limit) || undefined
-        const offset: number | undefined = Number(req.query.offset) || undefined
-        const userid: string | undefined = String(req.query.userid) || undefined
-        const search: string | undefined = String(req.query.search) || undefined
-        const object_id: string | undefined = String(req.query.object_id) || undefined
+        const limit: any = req.query.limit
+        const offset: any =req.query.offset
+        const userid: any = req.query.userid
+        const search: any = req.query.search
+        const object_id: any = req.query.object_id
 
-        const Query = { limit, offset, userid,  /* search, object_id */ }
-
-        console.log("QUERY_PARAMS:", Query)
+        const Query = { limit, offset, userid, search, object_id  }
 
         const DatabaseResponse = await SearchOnDatabase(Query)
         const ElasticRespose = await SearchOnElasticsearch(Query)
+
+        return res.json({
+            status: true,
+            database: DatabaseResponse,
+            elastic: ElasticRespose.map((value: any) => {
+                return {
+                    ...value._source
+                }
+            })
+        })
 
     }
     catch(err) {
