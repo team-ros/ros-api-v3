@@ -1,51 +1,92 @@
-import { objectModel } from "../../../database/model"
+import { Iobject, objectModel } from "../../../database/model"
 import { SearchClient } from "../../../elasticsearch/connection"
 
-interface IOptionsGetFromQuery {
-    limit?: number
-    offset?: number
-    userid?: string
-    object_id?: string
+interface IElasticResponse {
+    _index: string
+    _type: string
+    _score: number
+    _source: {
+        type: boolean
+        name: string
+        owner: string
+        id: string
+        contents?: string
+    }
 }
 
-export const SearchOnDatabase = async (options: IOptionsGetFromQuery) => {
+export const Search = async (options: { userid?: string; object_id?: string; search?: string}) => {
     try {
+        const DatabaseResponse = await SearchInDatabase(options)
+        const ElasticResponse = await SearchInElasticsearch(options)
 
-        const DatabaseQuery = JSON.stringify({
-            owner: options.userid,
-            uuid: options.object_id
+        if(!DatabaseResponse) return {
+            status: false,
+            error: "database query error"
+        }
+
+        if(!ElasticResponse) return {
+            status: false,
+            error: "elasticsearch query error"
+        }
+
+        return SerializeResponses(DatabaseResponse, ElasticResponse)
+        
+    }
+    catch(err) {
+        return {
+            status: false,
+            message: "internal server error",
+            debug: err
+        }
+    }
+}
+
+const SerializeResponses = (databaseResponse: Iobject[], elasticResponse: IElasticResponse[]) => {
+    const Response: { database?: Iobject, elastic?: IElasticResponse }[] = databaseResponse.map(value => {
+
+        const elasticfind = elasticResponse.find(element => element._source.id === value.uuid)
+        if(elasticfind) {
+            const index = elasticResponse.indexOf(elasticfind);
+            if (index > -1) {
+                elasticResponse.splice(index, 1);
+              }
+        }
+
+        return {
+            database: value,
+            elastic: elasticfind
+        }
+    })
+
+    elasticResponse.forEach(value => {
+        Response.push({
+            elastic: value
         })
+    })
 
-        const response = await objectModel.find(JSON.parse(DatabaseQuery))
-        .limit(options.limit || 9999999)
-        .skip(options.offset || 0)
+    return {
+        status: true,
+        data: Response
+    }
+}
+
+const SearchInDatabase = async (options: { userid?: string; object_id?: string}) => {
+    try {
+        const response = await objectModel.find(MongoQueryBuilder(options))
 
         if(response) return response
         return false
     }
     catch(err) {
+        console.log(err)
         return false
     }
 }
 
-export const SearchOnElasticsearch = async (options: IOptionsGetFromQuery) => {
+const SearchInElasticsearch = async (options: { userid?: string; object_id?: string; search?: string}): Promise<IElasticResponse[] | false> => {
     try {
 
-        const elasticQuery = JSON.stringify({
-            index: String(process.env.ELASTIC_INDEX),
-            from: options.offset,
-            size: options.limit,
-            body: {
-                query: {
-                    bool: {
-                        must: ElasticQueryBuilder({ uuid: options.object_id, owner: options.userid })
-                    }
-                }
-            }
-        })
-
-
-        const response = await SearchClient.search(JSON.parse(elasticQuery))
+        const response = await SearchClient.search(ElasticQueryBuilder({ uuid: options.object_id, owner: options.userid }))
 
         return response.body.hits.hits
     }
@@ -56,9 +97,29 @@ export const SearchOnElasticsearch = async (options: IOptionsGetFromQuery) => {
 }
 
 const ElasticQueryBuilder = (options: { uuid?: string, owner?: string }) => {
-    let rtarr = []
-    if(options.uuid) rtarr.push({ match: { uuid: options.uuid }})
-    if(options.owner) rtarr.push({ match: { owner: options.owner }})
+    return {
+        index: String(process.env.ELASTIC_INDEX),
+        body: {
+            query: {
+                bool: {
+                    must: () => {
+                        const MatchArray = []
+                        if(options.uuid) MatchArray.push({ match: { uuid: options.uuid }})
+                        if(options.owner) MatchArray.push({ match: { owner: options.owner }})
+                        
+                        return MatchArray
+                    }
+                }
+            }
+        }
+    }
+}
 
-    return rtarr
+const MongoQueryBuilder = (options: { object_id?: string, userid?: string }) => {
+    const ResultObject: { uuid?: string; owner?: string} = {}
+
+    if(options.object_id) ResultObject.uuid = options.object_id
+    if(options.userid) ResultObject.owner = options.userid
+
+    return ResultObject
 }
