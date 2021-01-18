@@ -12,11 +12,13 @@ app.use(bodyParser.json())
 
 // import routes
 import v3 from "./routes/v3"
-import admin from "./routes/admin"
 
 // apply routes
 app.use("/v3", v3)
-app.use("/admin", admin)
+
+app.get("/health", (req, res) => {
+    res.status(200).send()
+})
 
 // set http port
 app.listen(process.env.PORT || 8080)
